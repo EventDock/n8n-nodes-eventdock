@@ -1,0 +1,56 @@
+# Publish the EventDock n8n community node to npm WITH PROVENANCE.
+#
+# n8n requires verified community nodes to be published via a GitHub Actions
+# workflow that attaches an npm provenance statement (sigstore). This proves
+# the published tarball was built from this repo at this commit.
+#
+# Setup (one-time, done by the npm package owner — NOT automated here):
+#   1. On npmjs.com → package Settings → "Publish access" → "Trusted Publishers"
+#      → "Add a publisher" → GitHub Actions, with:
+#         repository owner: eventdock
+#         repository name:  n8n-nodes-eventdock
+#         workflow name:    publish.yml
+#      (Trusted Publishers means NO NPM_TOKEN secret is needed — OIDC is used.)
+#   2. Push a tag like `v0.1.0`, or run this workflow manually.
+#
+# This workflow is intentionally NOT triggered by code review; it only runs on
+# a version tag or manual dispatch.
+
+name: Publish to npm (with provenance)
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # REQUIRED for npm provenance / OIDC trusted publishing
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
+      # Provenance + public access. With Trusted Publishers configured on npm,
+      # the OIDC id-token grants publish rights; no NODE_AUTH_TOKEN is required.
+      - name: Publish with provenance
+        run: npm publish --provenance --access public
