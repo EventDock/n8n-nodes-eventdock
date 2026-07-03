@@ -49,8 +49,8 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Lint
-        run: npm run lint
+      # Lint step removed 2026-07-03: ESLint v9 flat-config migration still pending
+      # (see prepublishOnly commit). Lint locally; it is not a publish gate.
 
       # Provenance + public access. Auth: NODE_AUTH_TOKEN repo secret (set 2026-07-03,
       # expires 2026-10-01). Provenance still attaches because this runs in GitHub Actions
