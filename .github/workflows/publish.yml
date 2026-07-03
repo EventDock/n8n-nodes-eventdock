@@ -50,7 +50,10 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      # Provenance + public access. With Trusted Publishers configured on npm,
-      # the OIDC id-token grants publish rights; no NODE_AUTH_TOKEN is required.
+      # Provenance + public access. Auth: NODE_AUTH_TOKEN repo secret (set 2026-07-03,
+      # expires 2026-10-01). Provenance still attaches because this runs in GitHub Actions
+      # with id-token: write — Trusted Publishers is optional and can replace the token later.
       - name: Publish with provenance
         run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
