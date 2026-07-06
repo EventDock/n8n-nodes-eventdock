@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-eventdock",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "EventDock community node for n8n \u2014 trigger workflows on reliable, retried, de-duplicated webhook deliveries. EventDock buffers your provider webhooks (Stripe, Shopify, GitHub, Twilio, or any generic source), retries failures with exponential backoff, holds dead letters in a DLQ, and forwards clean events into your n8n workflow.",
   "keywords": [
     "n8n-community-node-package",
@@ -63,6 +63,6 @@
     "typescript": "^5.6.0"
   },
   "peerDependencies": {
-    "n8n-workflow": "^2.16.0"
+    "n8n-workflow": "*"
   }
 }

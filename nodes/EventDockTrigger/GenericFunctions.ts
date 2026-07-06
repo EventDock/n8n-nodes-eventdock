@@ -1,5 +1,6 @@
-import { URL } from 'node:url';
-
+// URL is a Node.js global (since v10) and available in the n8n runtime. We must NOT
+// import it from 'node:url' — n8n Cloud's community-node scanner bans any node: imports
+// (@n8n/community-nodes/no-restricted-imports). Using the global keeps us dependency-free.
 import type { IHookFunctions, IHttpRequestOptions } from 'n8n-workflow';
 import { NodeApiError } from 'n8n-workflow';
 
