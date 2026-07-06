@@ -52,10 +52,15 @@ jobs:
       # Lint step removed 2026-07-03: ESLint v9 flat-config migration still pending
       # (see prepublishOnly commit). Lint locally; it is not a publish gate.
 
-      # Provenance + public access. Auth: NODE_AUTH_TOKEN repo secret (set 2026-07-03,
-      # expires 2026-10-01). Provenance still attaches because this runs in GitHub Actions
-      # with id-token: write — Trusted Publishers is optional and can replace the token later.
-      - name: Publish with provenance
+      # OIDC "Trusted Publisher" auth (no token, no 2FA). The npmjs account enforces
+      # "require 2FA for writes", which granular/automation tokens hit as EOTP — so token
+      # auth is a dead end here. Trusted Publishing authenticates the PUT via GitHub OIDC
+      # (needs npm >= 11.5.1, hence the upgrade below) and still attaches provenance.
+      # One-time setup on npmjs.com (Asaf): package n8n-nodes-eventdock -> Settings ->
+      # Publish access -> Trusted Publishers -> add GitHub Actions: owner EventDock,
+      # repo n8n-nodes-eventdock, workflow publish.yml. After that this runs with zero secrets.
+      - name: Upgrade npm for OIDC publish auth
+        run: npm install -g npm@latest
+
+      - name: Publish with provenance (OIDC trusted publishing)
         run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
