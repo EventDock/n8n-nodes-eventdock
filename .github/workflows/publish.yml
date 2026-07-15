@@ -60,7 +60,10 @@ jobs:
       # Publish access -> Trusted Publishers -> add GitHub Actions: owner EventDock,
       # repo n8n-nodes-eventdock, workflow publish.yml. After that this runs with zero secrets.
       - name: Upgrade npm for OIDC publish auth
-        run: npm install -g npm@latest
+        # Pin to npm@11 (>=11.5.1 supports OIDC trusted publishing) — NOT npm@latest,
+        # which moved to npm@12 requiring Node 22+ and broke this on the Node 20 runner
+        # (EBADENGINE, 2026-07-15). npm@11 is compatible with Node 20.17+.
+        run: npm install -g npm@11
 
       - name: Publish with provenance (OIDC trusted publishing)
         run: npm publish --provenance --access public
