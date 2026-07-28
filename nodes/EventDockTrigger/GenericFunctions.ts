@@ -2,7 +2,7 @@
 // import it from 'node:url' — n8n Cloud's community-node scanner bans any node: imports
 // (@n8n/community-nodes/no-restricted-imports). Using the global keeps us dependency-free.
 import type { IHookFunctions, IHttpRequestOptions } from 'n8n-workflow';
-import { NodeApiError } from 'n8n-workflow';
+import { NodeApiError, NodeOperationError } from 'n8n-workflow';
 
 export interface EventDockCredentials {
 	apiKey: string;
@@ -234,27 +234,35 @@ export function isPrivateOrInternalHost(host: string): boolean {
  * runtime API call flows through here, so a malicious or fat-fingered base URL
  * (e.g. http://169.254.169.254) is rejected before any request is made.
  */
-export function normalizeBaseUrl(baseUrl: string): string {
+export function normalizeBaseUrl(this: IHookFunctions, baseUrl: string): string {
 	const raw = (baseUrl || DEFAULT_BASE_URL).trim();
 	if (!raw) {
 		return DEFAULT_BASE_URL;
 	}
 
+	// Errors must be n8n error types so they surface properly in the UI rather than as a bare
+	// stack trace (@n8n/community-nodes/require-node-api-error). That needs the node, which is
+	// why this is a `this`-typed function invoked with .call(this, ...) from the request helper.
 	let parsed: URL;
 	try {
 		parsed = new URL(raw);
 	} catch {
-		throw new Error(`Invalid EventDock API base URL: "${raw}". It must be a full https:// URL.`);
+		throw new NodeOperationError(
+			this.getNode(),
+			`Invalid EventDock API base URL: "${raw}". It must be a full https:// URL.`,
+		);
 	}
 
 	if (parsed.protocol !== 'https:') {
-		throw new Error(
+		throw new NodeOperationError(
+			this.getNode(),
 			`EventDock API base URL must use https:// (got "${parsed.protocol}"). Refusing to send credentials over an unencrypted or non-HTTP scheme.`,
 		);
 	}
 
 	if (isPrivateOrInternalHost(parsed.hostname)) {
-		throw new Error(
+		throw new NodeOperationError(
+			this.getNode(),
 			`EventDock API base URL "${parsed.hostname}" resolves to a private/internal host, which is not allowed.`,
 		);
 	}
@@ -279,7 +287,7 @@ export async function eventDockApiRequest(
 	// EventDock is a hosted SaaS — the API base URL is always production; there is
 	// no user-editable override, so there is no SSRF surface here. normalizeBaseUrl
 	// is kept on the path as a validated, tested chokepoint (defense in depth).
-	const baseUrl = normalizeBaseUrl(DEFAULT_BASE_URL);
+	const baseUrl = normalizeBaseUrl.call(this, DEFAULT_BASE_URL);
 
 	const options: IHttpRequestOptions = {
 		method,

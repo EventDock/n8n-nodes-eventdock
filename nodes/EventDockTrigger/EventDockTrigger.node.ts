@@ -33,7 +33,13 @@ export class EventDockTrigger implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: 'EventDock Trigger',
 		name: 'eventDockTrigger',
-		icon: 'file:eventdock.svg',
+		// Themed pair (@n8n/community-nodes/icon-prefer-themed-variants) so the mark reads
+		// correctly against both n8n themes.
+		icon: { light: 'file:eventdock.svg', dark: 'file:eventdock.dark.svg' },
+		// Required by n8n verification (@n8n/community-nodes/node-usable-as-tool). This is a
+		// trigger, so an AI agent cannot call it as a tool, but the rule wants the property
+		// declared explicitly rather than left to inference.
+		usableAsTool: true,
 		group: ['trigger'],
 		version: 1,
 		subtitle: '=Provider: {{$parameter["provider"]}}',

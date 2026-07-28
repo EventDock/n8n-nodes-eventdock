@@ -2,6 +2,7 @@ import type {
 	IAuthenticateGeneric,
 	ICredentialTestRequest,
 	ICredentialType,
+	Icon,
 	INodeProperties,
 } from 'n8n-workflow';
 
@@ -9,6 +10,10 @@ export class EventDockApi implements ICredentialType {
 	name = 'eventDockApi';
 
 	displayName = 'EventDock API';
+
+	// Required for n8n verification (@n8n/community-nodes/cred-class-field-icon-missing).
+	// Themed pair so the mark stays legible on both light and dark backgrounds.
+	icon: Icon = { light: 'file:eventdock.svg', dark: 'file:eventdock.dark.svg' };
 
 	documentationUrl = 'https://eventdock.app/docs';
 
